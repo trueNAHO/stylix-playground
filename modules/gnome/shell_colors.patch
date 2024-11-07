@@ -1,0 +1,40 @@
+diff --git a/data/gnome-shell-theme.gresource.xml b/data/gnome-shell-theme.gresource.xml
+index 8a4948e41..955ed5b13 100644
+--- a/data/gnome-shell-theme.gresource.xml
++++ b/data/gnome-shell-theme.gresource.xml
+@@ -11,7 +11,6 @@
+     <file>checkbox-off.svg</file>
+     <file>gnome-shell-dark.css</file>
+     <file>gnome-shell-light.css</file>
+-    <file>gnome-shell-high-contrast.css</file>
+     <file>gnome-shell-start.svg</file>
+     <file>pad-osd.css</file>
+     <file>process-working.svg</file>
+diff --git a/data/theme/gnome-shell-sass/_common.scss b/data/theme/gnome-shell-sass/_common.scss
+index 5b117ea71..67e7ce756 100644
+--- a/data/theme/gnome-shell-sass/_common.scss
++++ b/data/theme/gnome-shell-sass/_common.scss
+@@ -168,9 +168,9 @@ stage {
+
+ // tooltip
+ %tooltip {
+-  background-color: transparentize(black, 0.1);
+-  border: 1px solid transparentize($light_1, 0.9);
+-  color: $light_1;
++  background-color: transparentize($bg_color, 0.1);
++  border: 1px solid transparentize($base_color, 0.9);
++  color: $fg_color;
+
+   border-radius: 99px;
+   padding: $base_padding $base_padding * 2;
+diff --git a/data/theme/gnome-shell-sass/widgets/_calendar.scss b/data/theme/gnome-shell-sass/widgets/_calendar.scss
+index fc054da38..8e31741c1 100644
+--- a/data/theme/gnome-shell-sass/widgets/_calendar.scss
++++ b/data/theme/gnome-shell-sass/widgets/_calendar.scss
+@@ -27,6 +27,8 @@
+   .date-label {
+     @extend %title_2;
+   }
++
++  color: $fg_color !important;
+ }
