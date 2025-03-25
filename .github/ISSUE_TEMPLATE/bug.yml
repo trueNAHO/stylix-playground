@@ -45,6 +45,13 @@ body:
     validations:
       required: true
 
+  - type: markdown
+
+    attributes:
+      value: >-
+        <details open>
+        <summary>content</summary>
+
   - type: textarea
 
     attributes:
@@ -66,6 +73,12 @@ body:
 
     validations:
       required: true
+
+  - type: markdown
+
+    attributes:
+      value: >-
+        </details>
 
   - type: dropdown
 
