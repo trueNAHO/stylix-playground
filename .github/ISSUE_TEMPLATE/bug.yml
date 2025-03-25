@@ -54,7 +54,7 @@ body:
   - type: markdown
 
     attributes:
-      value: >-
+      value: |-
         <details open>
         <summary>content</summary>
 
@@ -83,7 +83,7 @@ body:
   - type: markdown
 
     attributes:
-      value: >-
+      value: |-
         </details>
 
   - type: dropdown
