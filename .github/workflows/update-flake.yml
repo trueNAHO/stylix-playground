@@ -34,7 +34,8 @@ jobs:
           commit-msg: "stylix: update all flake inputs"
 
           pr-title: >-
-            ${{ contains('release', matrix.branch)
+            ${{
+              contains('release', matrix.branch)
                && '[${{ matrix.branch }}] ' || '' }}
             stylix: update all flake inputs
 
