@@ -35,8 +35,10 @@ jobs:
 
           pr-title: >-
             ${{
-              contains('release', matrix.branch)
-               && '[${{ matrix.branch }}] ' || '' }}
+              contains('release', matrix.branch) &&
+                '[${{ matrix.branch }}] ' ||
+                ''
+            }}
             stylix: update all flake inputs
 
           pr-labels: dependencies
