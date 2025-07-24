@@ -50,7 +50,7 @@ jobs:
           # MAX_MAINTAINERS: 5
           # PR_NUMBER: ${{ github.event.pull_request.number }}
           MAX_MAINTAINERS: 999
-          PR_NUMBER: 1642
+          PR_NUMBER: "1642"
         run: |
           printf \
             'reviewers=%s\n' \
