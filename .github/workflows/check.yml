@@ -46,6 +46,7 @@ jobs:
 
       - id: get-maintainers
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # MAX_MAINTAINERS: 5
           # PR_NUMBER: ${{ github.event.pull_request.number }}
           MAX_MAINTAINERS: 999
@@ -85,3 +86,5 @@ jobs:
                   '
             )" \
             >>"$GITHUB_OUTPUT"
+
+          echo "$GITHUB_OUTPUT"
