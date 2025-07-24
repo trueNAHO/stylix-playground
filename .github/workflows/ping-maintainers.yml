@@ -1,11 +1,21 @@
 ---
+# TODO: Rename to 'Request Review' or 'Request Reviewers'.
 name: Ping Maintainers
 
 on:
+  push:
+    branches:
+      - master
+      - release-**
   pull_request:
-    types: [opened, ready_for_review, synchronize, reopened, edited]
-    paths:
-      - 'modules/'
+# on:
+#   push:
+#     branches:
+#       - master
+#   # pull_request:
+#   #   types: [opened, ready_for_review, synchronize, reopened, edited]
+#   #   paths:
+#   #     - 'modules/'
 
 jobs:
   ping-maintainers:
@@ -16,19 +26,19 @@ jobs:
 
       - uses: cachix/install-nix-action@v31
 
-      - uses: cachix/cachix-action@v16
-        with:
-          name: stylix
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-        continue-on-error: true
-
-      - uses: actions/create-github-app-token@v2
-        id: app-token
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          permission-contents: read
-          permission-pull-requests: write
+      # - uses: cachix/cachix-action@v16
+      #   with:
+      #     name: stylix
+      #     authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      #   continue-on-error: true
+      #
+      # - uses: actions/create-github-app-token@v2
+      #   id: app-token
+      #   with:
+      #     app-id: ${{ vars.APP_ID }}
+      #     private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      #     permission-contents: read
+      #     permission-pull-requests: write
 
       - run: nix build .#get-maintainers
 
@@ -39,15 +49,13 @@ jobs:
 
       - id: get-maintainers
         env:
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
-          REVIEWERS_API_URL: https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/requested_reviewers  # yamllint disable-line rule:line-length
+          PR_AUTHOR: Flameopathic
         run: |
           MAX_MAINTAINERS=5
 
-          existing_reviewers="$(
-            curl --silent "$REVIEWERS_API_URL" |
-              jq --raw-output [.users[].login]
-          )"
+          cat "$CHANGED_FILES"
+          date
+          cat result
 
           to_ping=()
 
@@ -55,15 +63,6 @@ jobs:
             jq --arg file "$file" --raw-output '.[$file][]' result |
               while read -r gh_id;
             do
-              # Do not request the original author or already requested
-              # reviewers.
-              if [[
-                "$gh_id" == "$PR_AUTHOR" || \
-                jq "index(\"$gh_id\") != null" <<<"$existing_reviewers"
-              ]]; then
-                  continue
-              fi
-
               to_ping+=("$gh_id")
             done
           done
@@ -74,7 +73,7 @@ jobs:
               "::set-output name=to-ping::$(printf '%s,' "${to_ping[@]}")"
           fi
 
-      - uses: AveryCameronUofR/add-reviewer-gh-action@1.0.3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          reviewers: ${{ steps.get-maintainers.outputs.to-ping }}
+      # - uses: AveryCameronUofR/add-reviewer-gh-action@1.0.3
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     reviewers: ${{ steps.get-maintainers.outputs.to-ping }}

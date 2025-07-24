@@ -36,10 +36,52 @@ jobs:
 
       - uses: cachix/install-nix-action@v31
 
-      - uses: cachix/cachix-action@v16
-        with:
-          name: stylix
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-        continue-on-error: true
+      - run: nix build .#get-maintainers
 
-      - run: nix develop --command stylix-check --no-nom
+      # - uses: cachix/cachix-action@v16
+      #   with:
+      #     name: stylix
+      #     authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      #   continue-on-error: true
+
+      - id: get-maintainers
+        env:
+          # MAX_MAINTAINERS: 5
+          # PR_NUMBER: ${{ github.event.pull_request.number }}
+          MAX_MAINTAINERS: 999
+          PR_NUMBER: 1642
+        run: |
+          printf \
+            'reviewers=%s\n' \
+            "$(
+              gh pr diff --name-only "$PR_NUMBER" |
+                jq \
+                  --argjson max_maintainers "$MAX_MAINTAINERS" \
+                  --raw-input \
+                  --raw-output \
+                  --slurp \
+                  --slurpfile maintainers result '
+                    ($maintainers[0] | keys_unsorted) as $subsystems |
+                    split("\n") as $changed_files |
+                    [
+                      $changed_files[] as $changed_file |
+                      (
+                        $maintainers[0][
+                          $subsystems[] |
+                          select(
+                            . as $subsystem |
+                            $changed_file |
+                            startswith($subsystem)
+                          )
+                        ]
+                      )[]
+                    ] |
+                    unique |
+                    if length <= $max_maintainers then
+                      . | join(",")
+                    else
+                      ""
+                    end
+                  '
+            )" \
+            >>"$GITHUB_OUTPUT"
