@@ -1,0 +1,4 @@
+{
+  name = "kernel console";
+  maintainers = [ ];
+}

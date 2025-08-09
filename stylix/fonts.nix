@@ -1,74 +1,126 @@
-{ pkgs, config, lib, ... }:
-
-with lib;
-
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 let
   cfg = config.stylix.fonts;
 
-  fontType = types.submodule { options = {
-    package = mkOption {
-      description = "Package providing the font.";
-      type = types.package;
-    };
+  mkFontOptions =
+    {
+      fontName,
+      displayName,
+      package,
+    }:
+    {
+      package = lib.mkPackageOption pkgs package { } // {
+        description = "Package providing the ${displayName} font.";
+      };
 
-    name = mkOption {
-      description = "Name of the font within the package.";
-      type = types.str;
+      name = lib.mkOption {
+        type = lib.types.str;
+        description = "Name of the ${displayName} font.";
+        default = fontName;
+      };
     };
-  }; };
-
-in {
+in
+{
   options.stylix.fonts = {
-    serif = mkOption {
-      description = "Serif font.";
-      type = fontType;
-      default = {
-        package = pkgs.dejavu_fonts;
-        name = "DejaVu Serif";
-      };
+    serif = mkFontOptions {
+      displayName = "Serif";
+      fontName = "DejaVu Serif";
+      package = "dejavu_fonts";
     };
 
-    sansSerif = mkOption {
-      description = "Sans-serif font.";
-      type = fontType;
-      default = {
-        package = pkgs.dejavu_fonts;
-        name = "DejaVu Sans";
-      };
+    sansSerif = mkFontOptions {
+      displayName = "Sans-serif";
+      fontName = "DejaVu Sans";
+      package = "dejavu_fonts";
     };
 
-    monospace = mkOption {
-      description = "Monospace font.";
-      type = fontType;
-      default = {
-        package = pkgs.dejavu_fonts;
-        name = "DejaVu Sans Mono";
-      };
+    monospace = mkFontOptions {
+      displayName = "Monospace";
+      fontName = "DejaVu Sans Mono";
+      package = "dejavu_fonts";
     };
 
-    emoji = mkOption {
-      description = "Emoji font.";
-      type = fontType;
-      default = {
-        package = pkgs.noto-fonts-emoji;
-        name = "Noto Color Emoji";
+    emoji = mkFontOptions {
+      displayName = "Emoji";
+      fontName = "Noto Color Emoji";
+      package = "noto-fonts-color-emoji";
+    };
+
+    sizes =
+      let
+        mkFontSizeOption =
+          { default, target }:
+          lib.mkOption {
+            default = if builtins.isInt default then default else cfg.sizes.${default};
+            defaultText =
+              if builtins.isInt default then
+                default
+              else
+                lib.literalExpression "config.stylix.fonts.sizes.${default}";
+
+            description = ''
+              The font size used for ${target}.
+
+              This is measured in [points](https://en.wikipedia.org/wiki/Point_(typography)).
+              In a computing context, there should be 72 points per inch.
+
+              [The CSS specification](https://drafts.csswg.org/css-values/#absolute-lengths)
+              says there should be 96 reference pixels per inch. This means CSS
+              uses a fixed ratio of 3 points to every 4 pixels, which is
+              sometimes useful. However, reference pixels might not correspond
+              to physical pixels, so this conversion may be invalid for other
+              applications.
+
+              The measurements given in inches are likely to be incorrect
+              unless you've
+              [manually set your DPI](https://linuxreviews.org/HOWTO_set_DPI_in_Xorg).
+            '';
+
+            type = with lib.types; either ints.unsigned float;
+          };
+      in
+      {
+        desktop = mkFontSizeOption {
+          target = "window titles, status bars, and other general elements of the desktop";
+          default = 10;
+        };
+
+        applications = mkFontSizeOption {
+          target = "applications";
+          default = 12;
+        };
+
+        terminal = mkFontSizeOption {
+          target = "terminals and text editors";
+          default = "applications";
+        };
+
+        popups = mkFontSizeOption {
+          target = "notifications, popups, and other overlay elements of the desktop";
+          default = "desktop";
+        };
       };
+
+    packages = lib.mkOption {
+      description = ''
+        A list of all the font packages that will be installed.
+      '';
+      type = lib.types.listOf lib.types.package;
+      readOnly = true;
     };
   };
 
-  config.fonts = {
-    fonts = [
+  config = lib.mkIf config.stylix.enable {
+    stylix.fonts.packages = [
       cfg.monospace.package
       cfg.serif.package
       cfg.sansSerif.package
       cfg.emoji.package
     ];
-
-    fontconfig.defaultFonts = {
-      monospace = [ cfg.monospace.name ];
-      serif = [ cfg.serif.name ];
-      sansSerif = [ cfg.sansSerif.name ];
-      emoji = [ cfg.emoji.name ];
-    };
   };
 }
